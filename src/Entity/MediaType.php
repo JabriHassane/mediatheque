@@ -2,16 +2,14 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
-use App\Repository\CategoriesRepository;
+use App\Repository\MediaTypeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: CategoriesRepository::class)]
-#[ApiResource]
-class Categories
+#[ORM\Entity(repositoryClass: MediaTypeRepository::class)]
+class MediaType
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -33,7 +31,7 @@ class Categories
     /**
      * @var Collection<int, Media>
      */
-    #[ORM\OneToMany(targetEntity: Media::class, mappedBy: 'category')]
+    #[ORM\OneToMany(targetEntity: Media::class, mappedBy: 'mediaType')]
     private Collection $media;
 
     public function __construct()
@@ -106,7 +104,7 @@ class Categories
     {
         if (!$this->media->contains($medium)) {
             $this->media->add($medium);
-            $medium->setCategory($this);
+            $medium->setMediaType($this);
         }
 
         return $this;
@@ -116,8 +114,8 @@ class Categories
     {
         if ($this->media->removeElement($medium)) {
             // set the owning side to null (unless already changed)
-            if ($medium->getCategory() === $this) {
-                $medium->setCategory(null);
+            if ($medium->getMediaType() === $this) {
+                $medium->setMediaType(null);
             }
         }
 

@@ -19,44 +19,17 @@ class Media
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $type = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $isbn = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $slug = null;
-
     #[ORM\Column]
-    private ?\DateTimeImmutable $publicationAt = null;
+    private ?\DateTimeImmutable $relaseDate = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?int $pageCount = null;
+    #[ORM\ManyToOne(inversedBy: 'media')]
+    private ?Categories $category = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?int $duration = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $language = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $coverImage = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $trailerVideo = null;
-
-    /**
-     * @var Collection<int, Categories>
-     */
-    #[ORM\OneToMany(targetEntity: Categories::class, mappedBy: 'media')]
-    private Collection $category;
-
-    #[ORM\Column]
-    private ?bool $isAvailable = null;
+    #[ORM\ManyToOne(inversedBy: 'media')]
+    private ?MediaType $mediaType = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -64,9 +37,22 @@ class Media
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    /**
+     * @var Collection<int, Season>
+     */
+    #[ORM\OneToMany(targetEntity: Season::class, mappedBy: 'media')]
+    private Collection $seasons;
+
+    /**
+     * @var Collection<int, Review>
+     */
+    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'media')]
+    private Collection $reviews;
+
     public function __construct()
     {
-        $this->category = new ArrayCollection();
+        $this->seasons = new ArrayCollection();
+        $this->reviews = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -86,164 +72,50 @@ class Media
         return $this;
     }
 
-    public function getType(): ?string
-    {
-        return $this->type;
-    }
-
-    public function setType(string $type): static
-    {
-        $this->type = $type;
-
-        return $this;
-    }
-
-    public function getIsbn(): ?string
-    {
-        return $this->isbn;
-    }
-
-    public function setIsbn(string $isbn): static
-    {
-        $this->isbn = $isbn;
-
-        return $this;
-    }
-
     public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function setDescription(?string $description): static
+    public function setDescription(string $description): static
     {
         $this->description = $description;
 
         return $this;
     }
 
-    public function getSlug(): ?string
+    public function getRelaseDate(): ?\DateTimeImmutable
     {
-        return $this->slug;
+        return $this->relaseDate;
     }
 
-    public function setSlug(string $slug): static
+    public function setRelaseDate(\DateTimeImmutable $relaseDate): static
     {
-        $this->slug = $slug;
+        $this->relaseDate = $relaseDate;
 
         return $this;
     }
 
-    public function getPublicationAt(): ?\DateTimeImmutable
-    {
-        return $this->publicationAt;
-    }
-
-    public function setPublicationAt(\DateTimeImmutable $publicationAt): static
-    {
-        $this->publicationAt = $publicationAt;
-
-        return $this;
-    }
-
-    public function getPageCount(): ?int
-    {
-        return $this->pageCount;
-    }
-
-    public function setPageCount(?int $pageCount): static
-    {
-        $this->pageCount = $pageCount;
-
-        return $this;
-    }
-
-    public function getDuration(): ?int
-    {
-        return $this->duration;
-    }
-
-    public function setDuration(?int $duration): static
-    {
-        $this->duration = $duration;
-
-        return $this;
-    }
-
-    public function getLanguage(): ?string
-    {
-        return $this->language;
-    }
-
-    public function setLanguage(?string $language): static
-    {
-        $this->language = $language;
-
-        return $this;
-    }
-
-    public function getCoverImage(): ?string
-    {
-        return $this->coverImage;
-    }
-
-    public function setCoverImage(?string $coverImage): static
-    {
-        $this->coverImage = $coverImage;
-
-        return $this;
-    }
-
-    public function getTrailerVideo(): ?string
-    {
-        return $this->trailerVideo;
-    }
-
-    public function setTrailerVideo(?string $trailerVideo): static
-    {
-        $this->trailerVideo = $trailerVideo;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Categories>
-     */
-    public function getCategory(): Collection
+    public function getCategory(): ?Categories
     {
         return $this->category;
     }
 
-    public function addCategory(Categories $category): static
+    public function setCategory(?Categories $category): static
     {
-        if (!$this->category->contains($category)) {
-            $this->category->add($category);
-            $category->setMedia($this);
-        }
+        $this->category = $category;
 
         return $this;
     }
 
-    public function removeCategory(Categories $category): static
+    public function getMediaType(): ?MediaType
     {
-        if ($this->category->removeElement($category)) {
-            // set the owning side to null (unless already changed)
-            if ($category->getMedia() === $this) {
-                $category->setMedia(null);
-            }
-        }
-
-        return $this;
+        return $this->mediaType;
     }
 
-    public function isAvailable(): ?bool
+    public function setMediaType(?MediaType $mediaType): static
     {
-        return $this->isAvailable;
-    }
-
-    public function setIsAvailable(bool $isAvailable): static
-    {
-        $this->isAvailable = $isAvailable;
+        $this->mediaType = $mediaType;
 
         return $this;
     }
@@ -268,6 +140,66 @@ class Media
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Season>
+     */
+    public function getSeasons(): Collection
+    {
+        return $this->seasons;
+    }
+
+    public function addSeason(Season $season): static
+    {
+        if (!$this->seasons->contains($season)) {
+            $this->seasons->add($season);
+            $season->setMedia($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSeason(Season $season): static
+    {
+        if ($this->seasons->removeElement($season)) {
+            // set the owning side to null (unless already changed)
+            if ($season->getMedia() === $this) {
+                $season->setMedia(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Review>
+     */
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
+    }
+
+    public function addReview(Review $review): static
+    {
+        if (!$this->reviews->contains($review)) {
+            $this->reviews->add($review);
+            $review->setMedia($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReview(Review $review): static
+    {
+        if ($this->reviews->removeElement($review)) {
+            // set the owning side to null (unless already changed)
+            if ($review->getMedia() === $this) {
+                $review->setMedia(null);
+            }
+        }
 
         return $this;
     }

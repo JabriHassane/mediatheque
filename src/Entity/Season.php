@@ -3,26 +3,25 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use App\Repository\CategoriesRepository;
+use App\Repository\SeasonRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: CategoriesRepository::class)]
+#[ORM\Entity(repositoryClass: SeasonRepository::class)]
 #[ApiResource]
-class Categories
+class Season
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 100)]
-    private ?string $name = null;
+    #[ORM\ManyToOne(inversedBy: 'seasons')]
+    private ?Media $media = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $description = null;
+    #[ORM\Column]
+    private ?int $number = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -31,14 +30,14 @@ class Categories
     private ?\DateTimeImmutable $updatedAt = null;
 
     /**
-     * @var Collection<int, Media>
+     * @var Collection<int, Episode>
      */
-    #[ORM\OneToMany(targetEntity: Media::class, mappedBy: 'category')]
-    private Collection $media;
+    #[ORM\OneToMany(targetEntity: Episode::class, mappedBy: 'season')]
+    private Collection $episodes;
 
     public function __construct()
     {
-        $this->media = new ArrayCollection();
+        $this->episodes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -46,26 +45,26 @@ class Categories
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getMedia(): ?Media
     {
-        return $this->name;
+        return $this->media;
     }
 
-    public function setName(string $name): static
+    public function setMedia(?Media $media): static
     {
-        $this->name = $name;
+        $this->media = $media;
 
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getNumber(): ?int
     {
-        return $this->description;
+        return $this->number;
     }
 
-    public function setDescription(?string $description): static
+    public function setNumber(int $number): static
     {
-        $this->description = $description;
+        $this->number = $number;
 
         return $this;
     }
@@ -95,29 +94,29 @@ class Categories
     }
 
     /**
-     * @return Collection<int, Media>
+     * @return Collection<int, Episode>
      */
-    public function getMedia(): Collection
+    public function getEpisodes(): Collection
     {
-        return $this->media;
+        return $this->episodes;
     }
 
-    public function addMedium(Media $medium): static
+    public function addEpisode(Episode $episode): static
     {
-        if (!$this->media->contains($medium)) {
-            $this->media->add($medium);
-            $medium->setCategory($this);
+        if (!$this->episodes->contains($episode)) {
+            $this->episodes->add($episode);
+            $episode->setSeason($this);
         }
 
         return $this;
     }
 
-    public function removeMedium(Media $medium): static
+    public function removeEpisode(Episode $episode): static
     {
-        if ($this->media->removeElement($medium)) {
+        if ($this->episodes->removeElement($episode)) {
             // set the owning side to null (unless already changed)
-            if ($medium->getCategory() === $this) {
-                $medium->setCategory(null);
+            if ($episode->getSeason() === $this) {
+                $episode->setSeason(null);
             }
         }
 
