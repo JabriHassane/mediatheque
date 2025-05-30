@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Symfony\Action\NotFoundAction;
 use App\Controller\MeController;
 use App\Repository\UsersRepository;
+use App\State\MeProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -22,10 +23,11 @@ use Symfony\Component\Serializer\Attribute\Groups;
     operations: [
         new GetCollection(
             uriTemplate: '/me',
+            stateless: false,
             controller: MeController::class,
             paginationEnabled: false,
             read: false,
-            name: 'me'
+            name: 'me',
         ),
         new Get(
             controller: NotFoundAction::class,
