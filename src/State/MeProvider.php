@@ -17,6 +17,6 @@ class MeProvider implements ProviderInterface
     }
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-
+        return null;
     }
 }

@@ -4,11 +4,14 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use ApiPlatform\Symfony\Action\NotFoundAction;
-use App\Controller\MeController;
+use App\Controller\Users\ChangePasswordController;
+use App\Controller\Users\MeController;
+use App\Controller\Users\UpdateMeController;
+use App\Controller\Users\UpdatePictureController;
 use App\Repository\UsersRepository;
-use App\State\MeProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -21,13 +24,38 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 #[ApiResource(
     operations: [
-        new GetCollection(
+        new Get(
             uriTemplate: '/me',
             stateless: false,
             controller: MeController::class,
             paginationEnabled: false,
+            security: "is_granted('ROLE_USER')",
             read: false,
-            name: 'me',
+            name: 'me'
+        ),
+        new Put(
+            uriTemplate: '/me',
+            stateless: false,
+            controller: UpdateMeController::class,
+            normalizationContext: ['groups' => ['update:me']],
+            security: "is_granted('ROLE_USER')",
+            name: 'update_me'
+        ),
+        new Post(
+            uriTemplate: '/me/change-password',
+            stateless: false,
+            controller: ChangePasswordController::class,
+            security: "is_granted('ROLE_USER')",
+            name: 'change_password'
+        ),
+        new Post(
+            uriTemplate: '/me/update-picture',
+            stateless: false,
+            controller: UpdatePictureController::class,
+            security: "is_granted('ROLE_USER')",
+            //read: false,
+            //write: false,
+            name: 'update_picture'
         ),
         new Get(
             controller: NotFoundAction::class,
@@ -48,14 +76,14 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(['read:user'])]
+    #[Groups(['read:user', 'update:me'])]
     private ?string $email = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
-    #[Groups(['read:user'])]
+    #[Groups(['read:user', 'update:me'])]
     private array $roles = [];
 
     /**
@@ -65,16 +93,23 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 60)]
+    #[Groups(['read:user', 'update:me'])]
     private ?string $userName = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['read:user', 'update:me'])]
     private ?\DateTime $birthDay = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['read:user', 'update:me'])]
     private ?string $phone = null;
 
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $country = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['read:user'])]
+    private ?string $profilePicture = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -304,4 +339,16 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    public function getProfilePicture(): ?string
+    {
+        return $this->profilePicture;
+    }
+
+    public function setProfilePicture(?string $profilePicture): void
+    {
+        $this->profilePicture = $profilePicture;
+    }
+
+
 }
